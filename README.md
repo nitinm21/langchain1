@@ -2,6 +2,12 @@
 
 Ever wondered what Steve Jobs would tell you about your startup idea? Or what Kobe Bryant would say about your work ethic? Or how Marcus Aurelius would stoically judge your life choices?
 
+
+
+https://github.com/user-attachments/assets/259b33fa-e61e-481f-b532-71f8d802273b
+
+
+
 Well, now you can fafo! 
 
 ## What is this?
