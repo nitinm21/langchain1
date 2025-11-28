@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Advisor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 13px;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 0.7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .terminal {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #30363d;
+        }
+
+        .terminal-body {
+            padding: 32px;
+        }
+
+        .prompt-line {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .prompt-symbol {
+            color: #58a6ff;
+        }
+
+        .prompt-text {
+            color: #c9d1d9;
+        }
+
+        .advisors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .advisor-item {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .advisor-item:hover {
+            border-color: #58a6ff;
+        }
+
+        .advisor-item.unavailable {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .advisor-item.unavailable:hover {
+            border-color: #30363d;
+        }
+
+        .advisor-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .advisor-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #30363d;
+            object-fit: cover;
+        }
+
+        .advisor-item:hover .advisor-avatar {
+            border-color: #58a6ff;
+        }
+
+        .advisor-number {
+            color: #58a6ff;
+            font-size: 13px;
+        }
+
+        .advisor-name {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .advisor-domain {
+            color: #8b949e;
+            font-size: 12px;
+            margin-left: 28px;
+        }
+
+        .advisor-quote {
+            color: #484f58;
+            font-size: 12px;
+            font-style: italic;
+            margin-left: 28px;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin-left: 8px;
+            background: #21262d;
+            color: #484f58;
+        }
+
+        @media (max-width: 768px) {
+            .back-link {
+                top: 16px;
+                left: 16px;
+            }
+
+            .terminal-body {
+                padding: 24px;
+            }
+
+            .advisor-domain,
+            .advisor-quote {
+                margin-left: 0;
+            }
+
+            .advisor-header {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← back</a>
+
+    <div class="container">
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dot"></div>
+                <div class="terminal-dot"></div>
+                <div class="terminal-dot"></div>
+            </div>
+            <div class="terminal-body">
+                <div class="prompt-line">
+                    <span class="prompt-symbol">$</span>
+                    <span class="prompt-text">ls advisors/</span>
+                </div>
+
+                <div class="advisors-list">
+                    {% for personality in personalities %}
+                    <a href="{% if personality.available %}/chat/{{ personality.id }}{% else %}#{% endif %}"
+                       class="advisor-item {% if not personality.available %}unavailable{% endif %}">
+                        <div class="advisor-header">
+                            {% if personality.id == 'steve_jobs' %}
+                            <img src="{{ url_for('static', filename='steve_jobs.webp') }}" alt="Steve Jobs" class="advisor-avatar">
+                            {% elif personality.id == 'kobe_bryant' %}
+                            <img src="{{ url_for('static', filename='kobe_bryant.jpg') }}" alt="Kobe Bryant" class="advisor-avatar">
+                            {% elif personality.id == 'marcus_aurelius' %}
+                            <img src="{{ url_for('static', filename='marcus_aurelius.jpg') }}" alt="Marcus Aurelius" class="advisor-avatar">
+                            {% endif %}
+                            <span class="advisor-number">[{{ loop.index }}]</span>
+                            <span class="advisor-name">{{ personality.name }}</span>
+                            {% if not personality.available %}
+                            <span class="status-badge">coming soon</span>
+                            {% endif %}
+                        </div>
+                        <div class="advisor-domain">{{ personality.domain }}</div>
+                        <div class="advisor-quote">"{{ personality.quote }}"</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

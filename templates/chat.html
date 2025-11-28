@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Session</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0d1117;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #c9d1d9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dots-bg::before,
+        .dots-bg::after,
+        .dots-bg .dots-layer1,
+        .dots-bg .dots-layer2 {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 3em;
+            height: 3em;
+            content: '.';
+            color: transparent;
+            font-size: 52px;
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dots-bg::before {
+            animation: 44s -27s dots-move infinite ease-in-out alternate;
+        }
+
+        .dots-bg::after {
+            animation: 43s -32s dots-move infinite ease-in-out alternate;
+        }
+
+        .dots-bg .dots-layer1 {
+            animation: 42s -23s dots-move infinite ease-in-out alternate;
+        }
+
+        .dots-bg .dots-layer2 {
+            animation: 41s -19s dots-move infinite ease-in-out alternate;
+        }
+
+        @keyframes dots-move {
+            from {
+                transform: rotate(0deg) scale(12) translateX(-20px);
+            }
+            to {
+                transform: rotate(360deg) scale(18) translateX(20px);
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .header {
+            background: #161b22;
+            padding: 16px 24px;
+            position: relative;
+            z-index: 2;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .back-link {
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            opacity: 0.7;
+            transform: translateX(-3px);
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.4);
+        }
+
+        .panels-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: #30363d;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+        }
+
+        .panel {
+            background: #0d1117;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover {
+            background: #0f1419;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #58a6ff, transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .panel:hover::before {
+            opacity: 0.5;
+        }
+
+        .panel-header {
+            padding: 16px;
+            border-bottom: 1px solid #21262d;
+            background: #161b22;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .panel-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #30363d;
+            object-fit: cover;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            animation: avatarPulse 3s ease-in-out infinite;
+        }
+
+        .panel-avatar:hover {
+            transform: scale(1.05);
+            border-color: #58a6ff;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.4);
+        }
+
+        @keyframes avatarPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .panel-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: #58a6ff;
+            transition: all 0.3s ease;
+        }
+
+        .panel-name:hover {
+            text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .panel-domain {
+            font-size: 10px;
+            color: #8b949e;
+            margin-top: 2px;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            opacity: 0;
+            animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.ai {
+            align-items: flex-start;
+        }
+
+        .message-label {
+            font-size: 10px;
+            color: #484f58;
+            padding: 0 8px;
+        }
+
+        .message-bubble {
+            max-width: 90%;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            border: 1px solid #30363d;
+            background: #161b22;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message-bubble:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.15);
+            border-color: #58a6ff;
+        }
+
+        .message.user .message-bubble {
+            border-color: #58a6ff;
+            color: #c9d1d9;
+        }
+
+        .message.ai .message-bubble {
+            border-color: #30363d;
+            color: #8b949e;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: #484f58;
+            border: 1px solid #21262d;
+            background: #0d1117;
+            max-width: fit-content;
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: all 0.3s ease;
+        }
+
+        .typing-indicator.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .typing-dot {
+            display: inline-block;
+            animation: blink 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0%, 60%, 100% {
+                opacity: 0.3;
+            }
+            30% {
+                opacity: 1;
+            }
+        }
+
+        .input-area {
+            background: #161b22;
+            padding: 16px 24px;
+            border-top: 1px solid #30363d;
+            position: relative;
+            z-index: 2;
+        }
+
+        .input-container {
+            max-width: 100%;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-prompt {
+            color: #58a6ff;
+            font-size: 13px;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #30363d;
+            background: #0d1117;
+            color: #c9d1d9;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #message-input:focus {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1),
+                        0 0 20px rgba(88, 166, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        #message-input::placeholder {
+            color: #484f58;
+        }
+
+        #send-btn {
+            background: transparent;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 10px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        #send-btn:not(:disabled) {
+            animation: buttonPulse 2s ease-in-out infinite;
+        }
+
+        #send-btn:hover:not(:disabled) {
+            border-color: #58a6ff;
+            color: #58a6ff;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        #send-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        #send-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 rgba(88, 166, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 8px rgba(88, 166, 255, 0.2);
+            }
+        }
+
+        .messages-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #30363d;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+
+        @media (max-width: 1024px) {
+            .panels-container {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                border-bottom: 1px solid #30363d;
+            }
+
+            .message-bubble {
+                max-width: 95%;
+            }
+        }
+
+        .cursor-trail {
+            position: fixed;
+            pointer-events: none;
+            font-size: 20px;
+            z-index: 9999;
+            animation: trailFade 0.8s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            0% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.5) rotate(20deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dots-bg">
+        <div class="dots-layer1"></div>
+        <div class="dots-layer2"></div>
+    </div>
+    <div class="overlay"></div>
+
+    <div class="header">
+        <div class="header-title">session: multi-advisor</div>
+        <a href="/" class="back-link">← exit</a>
+    </div>
+
+    <div class="panels-container">
+        <div class="panel">
+            <div class="panel-header">
+                <img src="{{ url_for('static', filename='steve_jobs.webp') }}" alt="Steve Jobs" class="panel-avatar">
+                <div class="panel-name">steve_jobs</div>
+                <div class="panel-domain">technology & vision</div>
+            </div>
+            <div class="messages-area" id="messages-steve">
+                <div class="typing-indicator" id="typing-steve">
+                    <span class="typing-dot">.</span><span class="typing-dot">.</span><span class="typing-dot">.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <img src="{{ url_for('static', filename='kobe_bryant.jpg') }}" alt="Kobe Bryant" class="panel-avatar">
+                <div class="panel-name">kobe_bryant</div>
+                <div class="panel-domain">sports & excellence</div>
+            </div>
+            <div class="messages-area" id="messages-kobe">
+                <div class="typing-indicator" id="typing-kobe">
+                    <span class="typing-dot">.</span><span class="typing-dot">.</span><span class="typing-dot">.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <img src="{{ url_for('static', filename='marcus_aurelius.jpg') }}" alt="Marcus Aurelius" class="panel-avatar">
+                <div class="panel-name">marcus_aurelius</div>
+                <div class="panel-domain">stoic philosophy</div>
+            </div>
+            <div class="messages-area" id="messages-marcus">
+                <div class="typing-indicator" id="typing-marcus">
+                    <span class="typing-dot">.</span><span class="typing-dot">.</span><span class="typing-dot">.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-container">
+            <span class="input-prompt">$</span>
+            <input type="text" id="message-input" placeholder="type your question..." onkeypress="handleKeyPress(event)">
+            <button id="send-btn" onclick="sendMessage()">send</button>
+        </div>
+    </div>
+
+    <script>
+        const personalities = ['steve', 'kobe', 'marcus'];
+        const personalityIds = {
+            'steve': 'steve_jobs',
+            'kobe': 'kobe_bryant',
+            'marcus': 'marcus_aurelius'
+        };
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            personalities.forEach(p => {
+                addMessage(message, 'user', p);
+            });
+
+            input.value = '';
+
+            personalities.forEach(p => {
+                showTyping(p, true);
+            });
+
+            const promises = personalities.map(p =>
+                queryPersonality(personalityIds[p], message, p)
+            );
+
+            await Promise.all(promises);
+
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        async function queryPersonality(personalityId, message, columnId) {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        personality_id: personalityId,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                showTyping(columnId, false);
+
+                if (response.ok) {
+                    addMessage(data.response, 'ai', columnId);
+                } else {
+                    addMessage('error: failed to get response', 'ai', columnId);
+                }
+            } catch (error) {
+                console.error(`Error for ${personalityId}:`, error);
+                showTyping(columnId, false);
+                addMessage('error: connection failed', 'ai', columnId);
+            }
+        }
+
+        function addMessage(text, type, columnId) {
+            const messagesArea = document.getElementById(`messages-${columnId}`);
+            const typingIndicator = document.getElementById(`typing-${columnId}`);
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'message-label';
+            labelDiv.textContent = type === 'user' ? 'you' : personalityIds[columnId].split('_')[0];
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.textContent = text;
+
+            messageDiv.appendChild(labelDiv);
+            messageDiv.appendChild(bubbleDiv);
+
+            messagesArea.insertBefore(messageDiv, typingIndicator);
+
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }, 50);
+        }
+
+        function showTyping(columnId, show) {
+            const typingIndicator = document.getElementById(`typing-${columnId}`);
+            if (show) {
+                typingIndicator.classList.add('show');
+            } else {
+                typingIndicator.classList.remove('show');
+            }
+
+            if (show) {
+                const messagesArea = document.getElementById(`messages-${columnId}`);
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+        }
+
+        function generateDots(count) {
+            let shadows = [];
+            for (let i = 0; i < count; i++) {
+                const x = (-.5 + Math.random() * 3);
+                const y = (-.5 + Math.random() * 3);
+                const hue = Math.random() * 360;
+                shadows.push(`${x}em ${y}em 7px hsla(${hue}, 100%, 50%, 0.9)`);
+            }
+            return shadows.join(', ');
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `
+            .dots-bg::before { text-shadow: ${generateDots(40)}; }
+            .dots-bg::after { text-shadow: ${generateDots(40)}; }
+            .dots-bg .dots-layer1 { text-shadow: ${generateDots(40)}; }
+            .dots-bg .dots-layer2 { text-shadow: ${generateDots(40)}; }
+        `;
+        document.head.appendChild(style);
+
+        // Cursor trail effects
+        const trailEmojis = {
+            'steve': '💻',
+            'kobe': '🏀',
+            'marcus': '📜'
+        };
+
+        let currentPanel = null;
+        let lastTrailTime = 0;
+        const trailDelay = 100; // milliseconds between trail elements
+
+        function createTrailElement(x, y, emoji) {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            trail.textContent = emoji;
+            trail.style.left = x + 'px';
+            trail.style.top = y + 'px';
+            document.body.appendChild(trail);
+
+            setTimeout(() => {
+                trail.remove();
+            }, 800);
+        }
+
+        function handleMouseMove(event, panelType) {
+            const now = Date.now();
+            if (now - lastTrailTime < trailDelay) return;
+            lastTrailTime = now;
+
+            const emoji = trailEmojis[panelType];
+            createTrailElement(event.clientX, event.clientY, emoji);
+        }
+
+        // Add event listeners to each panel
+        personalities.forEach(p => {
+            const panel = document.getElementById(`messages-${p}`).closest('.panel');
+
+            panel.addEventListener('mouseenter', () => {
+                currentPanel = p;
+            });
+
+            panel.addEventListener('mouseleave', () => {
+                currentPanel = null;
+            });
+
+            panel.addEventListener('mousemove', (e) => {
+                if (currentPanel === p) {
+                    handleMouseMove(e, p);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Would They Say?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dots-bg::before,
+        .dots-bg::after,
+        .dots-bg .dots-layer1,
+        .dots-bg .dots-layer2 {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 3em;
+            height: 3em;
+            content: '.';
+            color: transparent;
+            font-size: 52px;
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        .dots-bg::before {
+            animation: 44s -27s dots-move infinite ease-in-out alternate;
+        }
+
+        .dots-bg::after {
+            animation: 43s -32s dots-move infinite ease-in-out alternate;
+        }
+
+        .dots-bg .dots-layer1 {
+            animation: 42s -23s dots-move infinite ease-in-out alternate;
+        }
+
+        .dots-bg .dots-layer2 {
+            animation: 41s -19s dots-move infinite ease-in-out alternate;
+        }
+
+        @keyframes dots-move {
+            from {
+                transform: rotate(0deg) scale(12) translateX(-20px);
+            }
+            to {
+                transform: rotate(360deg) scale(18) translateX(20px);
+            }
+        }
+
+        .terminal {
+            max-width: 800px;
+            width: 100%;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .terminal-header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #30363d;
+        }
+
+        .terminal-body {
+            padding: 32px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0 0 16px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .description {
+            color: #8b949e;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .advisors-preview {
+            margin: 32px 0;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .advisor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid #30363d;
+            object-fit: cover;
+            transition: all 0.3s;
+        }
+
+        .advisor-avatar:hover {
+            border-color: #58a6ff;
+            transform: scale(1.05);
+        }
+
+        .input-line {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 24px;
+        }
+
+        .input-prompt {
+            color: #58a6ff;
+        }
+
+        .btn-start {
+            background: transparent;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-start:hover {
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+
+        .footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #21262d;
+            color: #484f58;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .terminal-body {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .prompt-line,
+            .option-line {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dots-bg">
+        <div class="dots-layer1"></div>
+        <div class="dots-layer2"></div>
+    </div>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+            <div class="terminal-dot"></div>
+        </div>
+        <div class="terminal-body">
+            <h1>What Would They Say?</h1>
+
+            <p class="description">
+                Query legendary minds for perspective. Ask a question,<br>
+                receive insights from three different viewpoints.
+            </p>
+
+            <div class="advisors-preview">
+                <img src="{{ url_for('static', filename='steve_jobs.webp') }}" alt="Steve Jobs" class="advisor-avatar" title="Steve Jobs">
+                <img src="{{ url_for('static', filename='kobe_bryant.jpg') }}" alt="Kobe Bryant" class="advisor-avatar" title="Kobe Bryant">
+                <img src="{{ url_for('static', filename='marcus_aurelius.jpg') }}" alt="Marcus Aurelius" class="advisor-avatar" title="Marcus Aurelius">
+            </div>
+
+            <div class="input-line">
+                <span class="input-prompt">$</span>
+                <a href="/chat" class="btn-start">start session</a>
+            </div>
+
+            <div class="footer">
+                powered by langchain + rag
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateDots(count) {
+            let shadows = [];
+            for (let i = 0; i < count; i++) {
+                const x = (-.5 + Math.random() * 3);
+                const y = (-.5 + Math.random() * 3);
+                const hue = Math.random() * 360;
+                shadows.push(`${x}em ${y}em 7px hsla(${hue}, 100%, 50%, 0.9)`);
+            }
+            return shadows.join(', ');
+        }
+
+        const dotsBg = document.querySelector('.dots-bg');
+        const before = window.getComputedStyle(dotsBg, '::before');
+        const after = window.getComputedStyle(dotsBg, '::after');
+        const layer1 = document.querySelector('.dots-layer1');
+        const layer2 = document.querySelector('.dots-layer2');
+
+        const style = document.createElement('style');
+        style.textContent = `
+            .dots-bg::before { text-shadow: ${generateDots(40)}; }
+            .dots-bg::after { text-shadow: ${generateDots(40)}; }
+            .dots-bg .dots-layer1 { text-shadow: ${generateDots(40)}; }
+            .dots-bg .dots-layer2 { text-shadow: ${generateDots(40)}; }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
